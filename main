@@ -1,0 +1,98 @@
+# ==================Project Description======================================
+"""
+OpenCv text & image detection in images (From Icons ScreenShots)
+
+"""
+
+# ==================Project Description End==================================
+
+
+
+# import required libraries 
+
+# !pip3 install pytesseract
+# !sudo apt-get install tesseract-ocr-all
+# !pip install --upgrade pip
+# !pip install --upgrade google-api-python-client
+# !pip install --upgrade google-cloud-vision
+
+# from google.cloud import vision
+import pytesseract
+import pandas as pd
+import cv2
+import csv
+import os
+import io
+
+# Method to detect all labels in images
+def detect_labels(path):
+    """ 
+    This method will detect labels and correspoding confidence score
+    in each image file.
+
+    """
+    
+    # Read the images to get labels
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+    image = vision.types.Image(content=content)
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+        
+    print('Labels   |   confidence score')
+    print('=' * 30, '\n' )
+
+    # Get each label and corresponding image file
+    for label in response.label_annotations:      
+      print(label.description, '   =','(%.2f%%)' % (label.score * 100.))
+
+
+# Method to get images from local drive, process them 
+# for text detection & apply detect_label() function
+def process_all_images(path):
+  ''' 
+    Loop through images, (to send to detect_labels function)
+    while retrieving each image text  
+  '''
+
+  image_files = sorted([os.path.join(path, 'images', file)
+  for file in os.listdir(path + "/images")
+  if file.endswith('.jpg')])
+
+  # Loop through each image while reading text
+  for file in image_files:
+    print('\n')
+    print('Results from image: %s' % file, '\n' )
+    print('Text data alignment in this file', '\n') 
+    
+    # Grab all detected text from each image File (Tesseract)
+    # reading image using opencv
+    image = cv2.imread(file)
+
+    #converting image into gray scale image
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # converting it to binary image by Thresholding
+    # this step is require if you have colored image because if you skip this part 
+    # then tesseract won't able to detect text correctly and this will give incorrect result
+    threshold_img = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+
+    # configuring parameters for tesseract and pandas
+    custom_config = r'--oem 3 --psm 6'
+    pandas_config = {'quoting': csv.QUOTE_NONE, 'sep': '\t'}
+
+    # now feeding image to tesseract
+    details = pytesseract.image_to_data(threshold_img, output_type=pytesseract.Output.DICT, config=custom_config)
+    print(details)
+
+    print('\n')
+    # To detect labels, uncomment this lines (enable json file AUTHENTICATION in Google account)
+    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="drive/My Drive/Colab Notebooks/vjson.json"
+    # client = vision.ImageAnnotatorClient()
+    # detect_labels()
+
+  print('\n')
+  print('done ...')
+
+process_all_images('drive/My Drive/Colab Notebooks/')
+
