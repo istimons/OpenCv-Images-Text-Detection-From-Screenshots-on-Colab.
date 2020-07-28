@@ -9,8 +9,8 @@ OpenCv + Pytesseract OCR detect text & IMAGES. on [Colab]
 **NOTE:**
 
 The following packages were installed on colab, you can install then on your 
-local machine by removing (!) mark. 
-Also, remember to change the drive directory path on colab and, or local methods.
+local machine by removing (!) mark. <br>
+Also, remember to change the drive directory path on colab and, or local methods (where/if necessary).
 
 `!pip3 install pytesseract ` <br>
 `!sudo apt-get install tesseract-ocr-all` <br>
